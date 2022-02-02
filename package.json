@@ -1,0 +1,10 @@
+{
+  "name": "theta-rpc",
+  "packageManager": "yarn@3.1.1",
+  "scripts": {
+    "build": "yarn workspaces foreach -v run build"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "say_hi",
+  "scripts": {
+    "build": "tsc"
+  },
+  "packageManager": "yarn@3.1.1",
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  }
+}
