@@ -1,10 +1,8 @@
 {
   "name": "say_hi",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
   },
-  "packageManager": "yarn@3.1.1",
-  "devDependencies": {
-    "typescript": "^4.5.5"
-  }
+  "packageManager": "yarn@3.1.1"
 }
