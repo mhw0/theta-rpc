@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+    branches:
+     - main
+    paths:
+    - 'packages/**'
+    - 'package.json'
+    - 'yarn.lock'
+  pull_request:
+    branches:
+     - main
+    paths:
+    - 'packages/**'
+    - 'package.json'
+    - 'yarn.lock'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install
+        run: |
+          yarn install
+      - name: Build
+        run: |
+          yarn build
+      - name: Test
+        run: |
+          yarn test
