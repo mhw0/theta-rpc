@@ -1,5 +1,5 @@
 {
-  "name": "say_hi",
+  "name": "@theta-rpc/errors",
   "scripts": {
     "build": "tsc",
     "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
