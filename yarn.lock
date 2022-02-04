@@ -21,6 +21,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@theta-rpc/errors@workspace:packages/errors":
+  version: 0.0.0-use.local
+  resolution: "@theta-rpc/errors@workspace:packages/errors"
+  languageName: unknown
+  linkType: soft
+
 "@tsconfig/node10@npm:^1.0.7":
   version: 1.0.8
   resolution: "@tsconfig/node10@npm:1.0.8"
@@ -687,12 +693,6 @@ __metadata:
   checksum: 21b1c257aac24840643fae9bc99ca6447a71a0039e7c6dcf64d0ead447ce511eff158d529f1b6258ad12668e66ee3e49ff14932d2b88a3bd578f483e79708104
   languageName: node
   linkType: hard
-
-"say_hi@workspace:packages/say_hi":
-  version: 0.0.0-use.local
-  resolution: "say_hi@workspace:packages/say_hi"
-  languageName: unknown
-  linkType: soft
 
 "side-channel@npm:^1.0.3, side-channel@npm:^1.0.4":
   version: 1.0.4
