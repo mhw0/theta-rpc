@@ -1,6 +1,6 @@
-import {BaseError} from './base-error';
+import {RPCError} from './rpc-error';
 
-export class InvalidParamsError extends BaseError {
+export class InvalidParamsError extends RPCError {
   constructor(data?: any) {
     super(-32602, "Invalid params", data);
   }

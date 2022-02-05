@@ -1,10 +1,10 @@
 import test from 'tape';
-import {BaseError, ParseError} from '../src';
+import {RPCError, ParseError} from '../src';
 
 test('ParseError', ({ok, is, end}) => {
   const parseError = new ParseError();
 
-  ok(parseError instanceof BaseError);
+  ok(parseError instanceof RPCError);
   is(parseError.code, -32700);
   is(parseError.message, 'Parse error');
 
