@@ -1,9 +1,0 @@
-{
-  "name": "@theta-rpc/errors",
-  "scripts": {
-    "build": "yarn run --binaries-only --top-level tsc",
-    "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
-  },
-  "types": "lib",
-  "packageManager": "yarn@3.1.1"
-}

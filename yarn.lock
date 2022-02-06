@@ -21,12 +21,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theta-rpc/errors@workspace:packages/errors":
-  version: 0.0.0-use.local
-  resolution: "@theta-rpc/errors@workspace:packages/errors"
-  languageName: unknown
-  linkType: soft
-
 "@theta-rpc/json-rpc@workspace:packages/json-rpc":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/json-rpc@workspace:packages/json-rpc"
