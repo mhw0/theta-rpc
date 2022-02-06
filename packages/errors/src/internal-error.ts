@@ -1,4 +1,4 @@
-import {RPCError} from './rpc-error';
+import { RPCError } from "./rpc-error";
 
 export class InternalError extends RPCError {
   constructor(data?: any) {

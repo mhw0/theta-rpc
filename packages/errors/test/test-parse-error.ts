@@ -1,12 +1,14 @@
-import test from 'tape';
-import {RPCError, ParseError} from '../src';
+import test from "tape";
+import { RPCError, ParseError } from "../src";
 
-test('ParseError', ({ok, is, end}) => {
+test("ParseError", ({ ok, deepEqual, end }) => {
   const parseError = new ParseError();
 
   ok(parseError instanceof RPCError);
-  is(parseError.code, -32700);
-  is(parseError.message, 'Parse error');
+  deepEqual(parseError.jsonrpcError, {
+    code: -32700,
+    message: "Parse error",
+  });
 
   end();
 });

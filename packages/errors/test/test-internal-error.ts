@@ -1,12 +1,14 @@
-import test from 'tape';
-import {RPCError, InternalError} from '../src';
+import test from "tape";
+import { RPCError, InternalError } from "../src";
 
-test('InternalError', ({ok, is, end}) => {
+test("InternalError", ({ ok, deepEqual, end }) => {
   const internalError = new InternalError();
 
   ok(internalError instanceof RPCError);
-  is(internalError.code, -32603);
-  is(internalError.message, 'Internal error');
+  deepEqual(internalError.jsonrpcError, {
+    code: -32603,
+    message: "Internal error",
+  });
 
   end();
 });

@@ -1,12 +1,14 @@
-import test from 'tape';
-import {RPCError, MethodNotFoundError} from '../src';
+import test from "tape";
+import { RPCError, MethodNotFoundError } from "../src";
 
-test('MethodNotFoundError', ({ok, is, end}) => {
+test("MethodNotFoundError", ({ ok, deepEqual, end }) => {
   const methodNotFoundError = new MethodNotFoundError();
 
   ok(methodNotFoundError instanceof RPCError);
-  is(methodNotFoundError.code, -32601);
-  is(methodNotFoundError.message, "Method not found");
+  deepEqual(methodNotFoundError.jsonrpcError, {
+    code: -32601,
+    message: "Method not found",
+  });
 
   end();
 });

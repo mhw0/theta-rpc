@@ -1,13 +1,15 @@
-import test from 'tape';
-import {RPCError} from '../src';
+import test from "tape";
+import { RPCError } from "../src";
 
-test('RPCError', ({ok, is, end}) => {
-  const rpcError = new RPCError(-32603, "Internal error", 'my data');
+test("RPCError", ({ ok, deepEqual, end }) => {
+  const rpcError = new RPCError(-32603, "Internal error", "my data");
 
   ok(rpcError instanceof Error);
-  is(rpcError.code, -32603);
-  is(rpcError.message, 'Internal error');
-  is(rpcError.data, 'my data');
+  deepEqual(rpcError.jsonrpcError, {
+    code: -32603,
+    message: "Internal error",
+    data: "my data",
+  });
 
   end();
 });

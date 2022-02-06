@@ -1,12 +1,14 @@
-import test from 'tape';
-import {RPCError, InvalidParamsError} from '../src';
+import test from "tape";
+import { RPCError, InvalidParamsError } from "../src";
 
-test('InvalidParamsError', ({ok, is, end}) => {
+test("InvalidParamsError", ({ ok, deepEqual, end }) => {
   const invalidParamsError = new InvalidParamsError();
 
   ok(invalidParamsError instanceof RPCError);
-  is(invalidParamsError.code, -32602);
-  is(invalidParamsError.message, 'Invalid params');
+  deepEqual(invalidParamsError.jsonrpcError, {
+    code: -32602,
+    message: "Invalid params",
+  });
 
   end();
 });
