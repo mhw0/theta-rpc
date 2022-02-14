@@ -2,7 +2,7 @@
   "name": "theta-rpc",
   "packageManager": "yarn@3.1.1",
   "scripts": {
-    "build": "yarn workspaces foreach -v run build",
+    "build": "yarn workspaces foreach -vt run build",
     "test": "yarn workspaces foreach -v run test"
   },
   "workspaces": [
