@@ -4,5 +4,9 @@
     "build": "yarn run --binaries-only --top-level tsc",
     "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
   },
-  "packageManager": "yarn@3.1.1"
+  "types": "lib",
+  "packageManager": "yarn@3.1.1",
+  "dependencies": {
+    "@theta-rpc/event-bus": "workspace:^"
+  }
 }

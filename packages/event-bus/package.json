@@ -4,6 +4,7 @@
     "build": "yarn run --binaries-only --top-level tsc",
     "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
   },
+  "types": "lib",
   "packageManager": "yarn@3.1.1",
   "devDependencies": {
     "eventemitter3": "^4.0.7"
