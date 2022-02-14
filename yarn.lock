@@ -24,10 +24,12 @@ __metadata:
 "@theta-rpc/base-transport@workspace:packages/base-transport":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/base-transport@workspace:packages/base-transport"
+  dependencies:
+    "@theta-rpc/event-bus": "workspace:^"
   languageName: unknown
   linkType: soft
 
-"@theta-rpc/event-bus@workspace:packages/event-bus":
+"@theta-rpc/event-bus@workspace:^, @theta-rpc/event-bus@workspace:packages/event-bus":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/event-bus@workspace:packages/event-bus"
   dependencies:
