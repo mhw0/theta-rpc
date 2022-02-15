@@ -1,6 +1,9 @@
 {
   "name": "theta-rpc",
-  "packageManager": "yarn@3.1.1",
+  "version": "0.0.0",
+  "repository": {
+    "url": "https://github.com/mhw0/theta-rpc"
+  },
   "scripts": {
     "build": "yarn workspaces foreach -vt run build",
     "test": "yarn workspaces foreach -v run test"
@@ -8,6 +11,7 @@
   "workspaces": [
     "packages/*"
   ],
+  "packageManager": "yarn@3.1.1",
   "devDependencies": {
     "@types/node": "^17.0.14",
     "@types/tape": "^4.13.2",
