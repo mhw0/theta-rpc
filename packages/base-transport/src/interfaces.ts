@@ -1,4 +1,4 @@
-export interface BaseEvents {
-  message(message: any, context: any): void;
-  reply(message: any, context: any): void;
+export interface BaseEvents<Context = void> {
+  message(message: any, context: Context): void;
+  reply(message: any, context: Context): void;
 }
