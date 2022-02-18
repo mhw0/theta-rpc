@@ -55,6 +55,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@theta-rpc/ipc-transport@workspace:packages/ipc-transport":
+  version: 0.0.0-use.local
+  resolution: "@theta-rpc/ipc-transport@workspace:packages/ipc-transport"
+  languageName: unknown
+  linkType: soft
+
 "@theta-rpc/json-rpc@workspace:packages/json-rpc":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/json-rpc@workspace:packages/json-rpc"
