@@ -38,6 +38,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@theta-rpc/core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@theta-rpc/core@workspace:packages/core"
+  languageName: unknown
+  linkType: soft
+
 "@theta-rpc/event-bus@workspace:^, @theta-rpc/event-bus@workspace:packages/event-bus":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/event-bus@workspace:packages/event-bus"
