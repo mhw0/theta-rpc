@@ -58,6 +58,11 @@ __metadata:
 "@theta-rpc/ipc-transport@workspace:packages/ipc-transport":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/ipc-transport@workspace:packages/ipc-transport"
+  dependencies:
+    "@theta-rpc/base-transport": "workspace:^"
+    "@types/debug": ^4.1.7
+    debug: ^4.3.3
+    frame-stream: ^3.0.0
   languageName: unknown
   linkType: soft
 
@@ -92,6 +97,22 @@ __metadata:
   version: 1.0.2
   resolution: "@tsconfig/node16@npm:1.0.2"
   checksum: ca94d3639714672bbfd55f03521d3f56bb6a25479bd425da81faf21f13e1e9d15f40f97377dedbbf477a5841c5b0c8f4cd1b391f33553d750b9202c54c2c07aa
+  languageName: node
+  linkType: hard
+
+"@types/debug@npm:^4.1.7":
+  version: 4.1.7
+  resolution: "@types/debug@npm:4.1.7"
+  dependencies:
+    "@types/ms": "*"
+  checksum: 0a7b89d8ed72526858f0b61c6fd81f477853e8c4415bb97f48b1b5545248d2ae389931680b94b393b993a7cfe893537a200647d93defe6d87159b96812305adc
+  languageName: node
+  linkType: hard
+
+"@types/ms@npm:*":
+  version: 0.7.31
+  resolution: "@types/ms@npm:0.7.31"
+  checksum: daadd354aedde024cce6f5aa873fefe7b71b22cd0e28632a69e8b677aeb48ae8caa1c60e5919bb781df040d116b01cb4316335167a3fc0ef6a63fa3614c0f6da
   languageName: node
   linkType: hard
 
@@ -258,7 +279,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:^4.0.0":
+"debug@npm:^4.0.0, debug@npm:^4.3.3":
   version: 4.3.3
   resolution: "debug@npm:4.3.3"
   dependencies:
@@ -528,6 +549,13 @@ __metadata:
   version: 0.2.0
   resolution: "forwarded@npm:0.2.0"
   checksum: fd27e2394d8887ebd16a66ffc889dc983fbbd797d5d3f01087c020283c0f019a7d05ee85669383d8e0d216b116d720fc0cef2f6e9b7eb9f4c90c6e0bc7fd28e6
+  languageName: node
+  linkType: hard
+
+"frame-stream@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "frame-stream@npm:3.0.0"
+  checksum: 818ac485b1e2267ef6d64f01df5896c97aad5b53a751950dee97174fb221e28a63dfc6a9892af4b9de0b8213a5975f4ec7feffc26ef844915ea0741a5cdd9af5
   languageName: node
   linkType: hard
 

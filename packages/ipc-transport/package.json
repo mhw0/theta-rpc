@@ -10,5 +10,13 @@
   "scripts": {
     "build": "yarn run --binaries-only --top-level tsc",
     "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
+  },
+  "dependencies": {
+    "@theta-rpc/base-transport": "workspace:^",
+    "debug": "^4.3.3",
+    "frame-stream": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.7"
   }
 }
