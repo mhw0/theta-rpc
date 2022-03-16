@@ -1,9 +1,9 @@
-import { EventBus } from "@theta-rpc/event-bus";
-import { BaseEvents } from "./interfaces";
+import { Signal } from "@theta-rpc/signal";
+import { TransportSignals } from "./interfaces";
 
-export abstract class BaseTransport<Context = void> extends EventBus<
-  BaseEvents<Context>
+export abstract class BaseTransport<Ref = void> extends Signal<
+  TransportSignals<Ref>
 > {
-  public abstract launch(): Promise<any>;
-  public abstract close(): Promise<any>;
+  public abstract launch(): Promise<void>;
+  public abstract close(): Promise<void>;
 }

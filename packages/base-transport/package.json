@@ -12,6 +12,6 @@
     "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
   },
   "dependencies": {
-    "@theta-rpc/event-bus": "workspace:^"
+    "@theta-rpc/signal": "workspace:^"
   }
 }

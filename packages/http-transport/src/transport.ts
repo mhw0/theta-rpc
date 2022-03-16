@@ -89,7 +89,7 @@ export class HTTPTransport<
     const path = this.options?.path || this.defaultPath;
     this.instance.post(path, { preHandler }, (request, reply) => {
       const ref = new HTTPReference(request, reply);
-      this.emit("message", request.body, ref);
+      this.emit("message", (request.body as Buffer), ref);
     });
   }
 
