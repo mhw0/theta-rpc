@@ -12,7 +12,7 @@
     "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
   },
   "dependencies": {
-    "@theta-rpc/base-transport": "workspace:^",
+    "@theta-rpc/transport": "workspace:^",
     "fastify": "^3.27.1"
   }
 }

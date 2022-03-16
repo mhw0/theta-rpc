@@ -7,7 +7,7 @@ import createFastify, {
   RawServerBase,
   RawServerDefault,
 } from "fastify";
-import { BaseTransport } from "@theta-rpc/base-transport";
+import { Transport } from "@theta-rpc/transport";
 import { HTTPReference } from "./reference";
 import {
   HTTPOptions,
@@ -30,7 +30,7 @@ function preHandler(
 
 export class HTTPTransport<
   RawServer extends RawServerBase = RawServerDefault
-> extends BaseTransport<HTTPReference<RawServer>> {
+> extends Transport<HTTPReference<RawServer>> {
   private readonly defaultHost = "127.0.0.1";
   private readonly defaultPath = "/jsonrpc";
   private readonly defaultPort = 8080;

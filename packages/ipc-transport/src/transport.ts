@@ -1,4 +1,4 @@
-import { BaseTransport } from "@theta-rpc/base-transport";
+import { Transport } from "@theta-rpc/transport";
 import frameStream from "frame-stream";
 import debug from "debug";
 import net from "net";
@@ -9,7 +9,7 @@ import { IPCTransportOptions } from "./interfaces";
 
 const L = debug("theta-rpc:ipc-transport");
 
-export class IPCTransport extends BaseTransport<IPCReference> {
+export class IPCTransport extends Transport<IPCReference> {
   private instance: net.Server;
   private isRunning = false;
   private sockets: net.Socket[] = [];

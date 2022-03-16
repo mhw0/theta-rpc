@@ -30,14 +30,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theta-rpc/base-transport@workspace:^, @theta-rpc/base-transport@workspace:packages/base-transport":
-  version: 0.0.0-use.local
-  resolution: "@theta-rpc/base-transport@workspace:packages/base-transport"
-  dependencies:
-    "@theta-rpc/signal": "workspace:^"
-  languageName: unknown
-  linkType: soft
-
 "@theta-rpc/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/core@workspace:packages/core"
@@ -48,7 +40,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@theta-rpc/http-transport@workspace:packages/http-transport"
   dependencies:
-    "@theta-rpc/base-transport": "workspace:^"
+    "@theta-rpc/transport": "workspace:^"
     fastify: ^3.27.1
   languageName: unknown
   linkType: soft
@@ -57,7 +49,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@theta-rpc/ipc-transport@workspace:packages/ipc-transport"
   dependencies:
-    "@theta-rpc/base-transport": "workspace:^"
+    "@theta-rpc/transport": "workspace:^"
     "@types/debug": ^4.1.7
     debug: ^4.3.3
     frame-stream: ^3.0.0
@@ -75,6 +67,14 @@ __metadata:
   resolution: "@theta-rpc/signal@workspace:packages/signal"
   dependencies:
     eventemitter3: ^4.0.7
+  languageName: unknown
+  linkType: soft
+
+"@theta-rpc/transport@workspace:^, @theta-rpc/transport@workspace:packages/transport":
+  version: 0.0.0-use.local
+  resolution: "@theta-rpc/transport@workspace:packages/transport"
+  dependencies:
+    "@theta-rpc/signal": "workspace:^"
   languageName: unknown
   linkType: soft
 

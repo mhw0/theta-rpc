@@ -1,5 +1,5 @@
 {
-  "name": "@theta-rpc/base-transport",
+  "name": "@theta-rpc/transport",
   "version": "0.0.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
