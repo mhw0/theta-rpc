@@ -1,0 +1,14 @@
+{
+  "name": "@theta-rpc/msgpack-frame",
+  "version": "0.0.0",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "author": "mhw0",
+  "repository": {
+    "url": "https://github.com/mhw0/theta-rpc"
+  },
+  "scripts": {
+    "build": "yarn run --binaries-only --top-level tsc",
+    "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
+  }
+}
