@@ -56,12 +56,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@theta-rpc/json-rpc@workspace:packages/json-rpc":
-  version: 0.0.0-use.local
-  resolution: "@theta-rpc/json-rpc@workspace:packages/json-rpc"
-  languageName: unknown
-  linkType: soft
-
 "@theta-rpc/msgpack-frame@workspace:packages/msgpack-frame":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/msgpack-frame@workspace:packages/msgpack-frame"
