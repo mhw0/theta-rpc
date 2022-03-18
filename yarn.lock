@@ -62,6 +62,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@theta-rpc/msgpack@workspace:packages/msgpack":
+  version: 0.0.0-use.local
+  resolution: "@theta-rpc/msgpack@workspace:packages/msgpack"
+  languageName: unknown
+  linkType: soft
+
 "@theta-rpc/signal@workspace:^, @theta-rpc/signal@workspace:packages/signal":
   version: 0.0.0-use.local
   resolution: "@theta-rpc/signal@workspace:packages/signal"
