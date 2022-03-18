@@ -1,13 +1,13 @@
 import { Transform, TransformCallback } from 'stream';
 
-const MSGPACK_FRAME_MAX_BUFFER_SIZE = 64 * 10000;
+const MSGPACK_FRAME_MAX_BUFFER_SIZE = 64 * 1000;
 
 interface MsgpackFrameOptions {
   maxBufferSize?: number;
 }
 
 export class MsgpackFrame extends Transform {
-  private head = 0;
+  private head: number = 0;
   private buffer: Buffer | null = null;
   private stack: number[] = [];
 
@@ -15,24 +15,24 @@ export class MsgpackFrame extends Transform {
     super();
   }
 
-  releaseMem(): void {
+  private releaseMem(): void {
     this.head = 0;
     this.buffer = null;
   }
 
-  toHex(int: number): string {
+  private toHex(int: number): string {
     return "0x" + int.toString(16);
   }
 
-  decr(): void {
+  private decr(): void {
     if (this.stack.length == 0) return;
-    const len = this.stack.length - 1;
-    if ((this.stack[len] = this.stack[len] - 1) == 0) {
+    const le = this.stack.length - 1;
+    if ((this.stack[le] = this.stack[le] - 1) == 0) {
       this.stack.pop();
     }
   }
 
-  _transform(chunk: Buffer, _: string, callback: TransformCallback) {
+  public _transform(chunk: Buffer, _: string, callback: TransformCallback): void {
     if (this.buffer === null)
       this.buffer = Buffer.alloc(0);
 
@@ -57,13 +57,13 @@ export class MsgpackFrame extends Transform {
       } else if (buffer[head] >= 0x00 && buffer[head] <= 0x7f) { // fixed uint
         this.head++;
       } else if (buffer[head] >= 0xcc && buffer[head] <= 0xce) { // uint8 - uint32
-        const slotsize = 2 ** (buffer[head] - 0xcc);
-        this.head += (1 + slotsize);
+        const sizeslot = 2 ** (buffer[head] - 0xcc);
+        this.head += (1 + sizeslot);
       } else if (buffer[head] >= 0xe0 && buffer[head] <= 0xff) { // fixint
         this.head++;
       } else if (buffer[head] >= 0xd0 && buffer[head] <= 0xd2) { // int8 - int32
-        const slotsize = 2 ** (buffer[head] - 0xd0);
-        this.head += (1 + slotsize);
+        const sizeslot = 2 ** (buffer[head] - 0xd0);
+        this.head += (1 + sizeslot);
       } else if (buffer[head] >= 0xca && buffer[head] <= 0xcb) { // float 
         const floatsize = (buffer[head] - 0xca) + 1;
         this.head += (1 + (floatsize * 4));
