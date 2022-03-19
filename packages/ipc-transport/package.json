@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "yarn run --binaries-only --top-level tsc",
-    "test": "yarn run --binaries-only --top-level tape -r 'ts-node/register' 'test/**/*.ts'"
+    "test": "yarn run --binaries-only --top-level mocha --config ../../.mocharc.yml"
   },
   "dependencies": {
     "@theta-rpc/transport": "workspace:^",
