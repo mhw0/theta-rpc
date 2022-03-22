@@ -29,6 +29,7 @@ export class MsgpackFrame extends Transform {
     const le = this.stack.length - 1;
     if ((this.stack[le] = this.stack[le] - 1) == 0) {
       this.stack.pop();
+      this.decr();
     }
   }
 
@@ -54,7 +55,7 @@ export class MsgpackFrame extends Transform {
         this.head++;
       } else if (buffer[head] == 0xc2 || buffer[head] == 0xc3) { // bool
         this.head++;
-      } else if (buffer[head] >= 0x00 && buffer[head] <= 0x7f) { // fixed uint
+      } else if (buffer[head] >= 0x00 && buffer[head] <= 0x7f) { // fixuint
         this.head++;
       } else if (buffer[head] >= 0xcc && buffer[head] <= 0xce) { // uint8 - uint32
         const sizeslot = 2 ** (buffer[head] - 0xcc);
