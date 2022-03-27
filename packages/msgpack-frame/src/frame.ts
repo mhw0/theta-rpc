@@ -101,6 +101,13 @@ export class MsgpackFrame extends Transform {
         this.stack.push(mapsize * 2);
         this.head += (1 + sizeslot);
         coll = true;
+      } else if (buffer[head] >= 0xd4 && buffer[head] <= 0xd8) { // fixext
+        const extsize = 2 ** (8 * ((buffer[head] - 0xd4) + 1)) - 1;
+        this.head += (1 + 1 + extsize);
+      } else if (buffer[head] >= 0xc7 && buffer[head] <= 0xc9) { // ext8 - ext32
+        const sizeslot = 2 ** (buffer[head] - 0xc7);
+        const extsize = 2 ** (8 * sizeslot) - 1;
+        this.head += (1 + sizeslot + 1 + extsize);
       } else {
         callback(new Error('MSGPACK_FRAME_ERR_INVALID_HEADER: ' + this.toHex(buffer[head])));
         return this.releaseMem();
