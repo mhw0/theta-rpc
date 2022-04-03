@@ -9,3 +9,7 @@ export const MSGPACK_FMT_UINT32 = 0xce;
 export const MSGPACK_FMT_INT8 = 0xd0;
 export const MSGPACK_FMT_INT16 = 0xd1;
 export const MSGPACK_FMT_INT32 = 0xd2;
+
+export const MSGPACK_FMT_STR8 = 0xd9;
+export const MSGPACK_FMT_STR16 = 0xda;
+export const MSGPACK_FMT_STR32 = 0xdb;
