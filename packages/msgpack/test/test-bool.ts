@@ -1,12 +1,20 @@
-import { assert } from 'chai';
-import { encodeBool } from '../src';
+import { assert } from "chai";
+import { encodeBool, MPBuffer } from "../src";
 
-describe("encodeBool", function() {
-  it ("true", () => {
-    assert.deepEqual(encodeBool(true, []), { error: null, bytes: [0xc3] });
+describe("encodeBool", function () {
+  it("true", () => {
+    assert.deepEqual(encodeBool(true, MPBuffer.alloc(1)), {
+      error: null,
+      encbuf: MPBuffer.from([0xc3]),
+      bytes: 1,
+    });
   });
 
-  it ("false", () => {
-    assert.deepEqual(encodeBool(false, []), { error: null, bytes: [0xc2] });
+  it("false", () => {
+    assert.deepEqual(encodeBool(false, MPBuffer.alloc(1)), {
+      error: null,
+      encbuf: MPBuffer.from([0xc2]),
+      bytes: 1,
+    });
   });
 });

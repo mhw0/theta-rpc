@@ -1,21 +1,29 @@
 import { assert } from "chai";
-import { encodeStr } from "../src";
+import { MPBuffer, encodeStr } from "../src";
 
 describe("encodeStr", function () {
   it("str", () => {
-    const encoded = encodeStr("🦔 hedgehog", []);
-    assert.deepEqual(encoded, {
+    assert.deepEqual(encodeStr("🦔 hedgehog", MPBuffer.alloc(11 * 4 + 5)), {
       error: null,
-      bytes: [
+      encbuf: MPBuffer.from([
         0xad, 0xf0, 0x9f, 0xa6, 0x94, 0x20, 0x68, 0x65, 0x64, 0x67, 0x65, 0x68,
-        0x6f, 0x67,
-      ],
+        0x6f, 0x67, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00,
+      ]),
+      bytes: 14,
     });
   });
 
-  it("MSGPACK_STR_INVALID_SURROGATE_PAIRS", () => {
-    const encoded = encodeStr("\ud83ek", []);
-    assert.instanceOf(encoded.error, Error);
-    assert.equal(encoded.error!.message, "MSGPACK_STR_INVALID_SURROGATE_PAIRS");
+  it("invalid code point", () => {
+    assert.deepEqual(encodeStr("\ud83ek", MPBuffer.alloc(13)), {
+      error: null,
+      encbuf: MPBuffer.from([
+        0xa4, 0xef, 0xbf, 0xbd, 0x6b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00,
+      ]),
+      bytes: 5,
+    });
   });
 });

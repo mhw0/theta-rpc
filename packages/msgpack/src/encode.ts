@@ -12,120 +12,165 @@ import {
   MSGPACK_FMT_STR16,
   MSGPACK_FMT_STR32
 } from "./fmt";
-
-type byte = number;
-type char = string;
-type opt<T> = T | undefined;
+import { MPBuffer } from "./buffer";
 
 export interface EncodeOp {
-  error: Error | null,
-  bytes: byte[];
+  error: Error | null;
+  encbuf: MPBuffer;
+  bytes: number;
 }
 
-export function encodeNil(bytes: byte[]): EncodeOp {
-  bytes.push(MSGPACK_FMT_NIL);
-  return { error: null, bytes };
+const erroffset = new Error("Offset is out of bounds");
+
+function setu8(buf: MPBuffer, u8: number, offset: number): void {
+  buf[offset] = u8;
 }
 
-export function encodeBool(bool: boolean, bytes: byte[]): EncodeOp {
-  bytes.push(bool ? MSGPACK_FMT_BOOL_TRUE : MSGPACK_FMT_BOOL_FALSE);
-  return { error: null, bytes };
+function emem(buf: MPBuffer, offset: number, size: number): boolean {
+  return (buf.byteLength - offset) >= size;
 }
 
-export function encodeInt(int: number, bytes: byte[]): EncodeOp {
+export function encodeNil(encbuf: MPBuffer, offset = 0): EncodeOp {
+  if (emem(encbuf, offset, 1) == false)
+    return { error: erroffset, encbuf, bytes: offset };
+
+  setu8(encbuf, MSGPACK_FMT_NIL, offset++);
+
+  return { error: null, encbuf, bytes: offset };
+}
+
+export function encodeBool(bool: boolean, encbuf: MPBuffer, offset = 0): EncodeOp {
+  if (emem(encbuf, offset, 1) == false)
+    return { error: erroffset, encbuf, bytes: offset };
+
+  setu8(encbuf, bool ? MSGPACK_FMT_BOOL_TRUE : MSGPACK_FMT_BOOL_FALSE, offset++);
+  return { error: null, encbuf, bytes: offset };
+}
+
+export function encodeInt(int: number, encbuf: MPBuffer, offset = 0): EncodeOp {
+  if (emem(encbuf, offset, 5) == false)
+    return { error: erroffset, encbuf, bytes: offset };
+
   if (int >= 0x00 && int <= 0x7f) { // fixuint
-    bytes.push(int);
+    setu8(encbuf, int, offset++);
   } else if (int >= -0x20 && int < 0x00) { // fixint
-    bytes.push(int & 0xff);
+    setu8(encbuf, int & 0xff, offset++);
   } else if (int >= 0x00 && int <= 0xff) { // uint8
-    bytes.push(MSGPACK_FMT_UINT8);
-    bytes.push(int);
+    setu8(encbuf, MSGPACK_FMT_UINT8, offset++);
+    setu8(encbuf, int, offset++);
   } else if (int > 0xff && int <= 0xffff) { // uint16
-    bytes.push(MSGPACK_FMT_UINT16);
-    bytes.push(int >> 8);
-    bytes.push(int & 0xff);
+    setu8(encbuf, MSGPACK_FMT_UINT16, offset++);
+    setu8(encbuf, int >> 8, offset++);
+    setu8(encbuf, int & 0xff, offset++);
   } else if (int > 0xffff && int <= 0xffffffff) { // uint32
-    bytes.push(MSGPACK_FMT_UINT32);
-    bytes.push((int >> 24) & 0xff);
-    bytes.push((int >> 16) & 0xff);
-    bytes.push((int >> 8) & 0xff);
-    bytes.push(int & 0xff);
+    setu8(encbuf, MSGPACK_FMT_UINT32, offset++);
+    setu8(encbuf, (int >> 24) & 0xff, offset++);
+    setu8(encbuf, (int >> 16) & 0xff, offset++);
+    setu8(encbuf, (int >> 8) & 0xff, offset++);
+    setu8(encbuf, int & 0xff, offset++);
   } else if (int >= -0x80 && int <= 0x7f) { // int8
-    bytes.push(MSGPACK_FMT_INT8);
-    bytes.push(int & 0xff);
+    setu8(encbuf, MSGPACK_FMT_INT8, offset++);
+    setu8(encbuf, int & 0xff, offset++);
   } else if (int >= -0x8000 && int <= 0x7fff) { // int16
-    bytes.push(MSGPACK_FMT_INT16);
-    bytes.push((int >> 8) & 0xff);
-    bytes.push(int & 0xff);
+    setu8(encbuf, MSGPACK_FMT_INT16, offset++);
+    setu8(encbuf, (int >> 8) & 0xff, offset++);
+    setu8(encbuf, int & 0xff, offset++);
   } else if (int >= -0x80000000 && int <= 0x7fffffff) { // int32
-    bytes.push(MSGPACK_FMT_INT32);
-    bytes.push((int >> 24) & 0xff);
-    bytes.push((int >> 16) & 0xff);
-    bytes.push((int >> 8) & 0xff);
-    bytes.push(int & 0xff);
+    setu8(encbuf, MSGPACK_FMT_INT32, offset++);
+    setu8(encbuf, (int >> 24) & 0xff, offset++);
+    setu8(encbuf, (int >> 16) & 0xff, offset++);
+    setu8(encbuf, (int >> 8) & 0xff, offset++);
+    setu8(encbuf, int & 0xff, offset++);
   }
 
-  return { error: null, bytes };
+  return { error: null, encbuf, bytes: offset };
 }
 
-function utf8e(codep: number, bytes: byte[]): void {
-  if (codep >= 0x0000 && codep <= 0x007f) { // U+0000 - U+007F
-    bytes.push(codep); // 0xxxxxxx
-  } else if (codep >= 0x0080 && codep <= 0x07ff) { // U+0080 - U+07FF
-    bytes.push(0xc0 | (codep >> 6));   // 110xxxxx
-    bytes.push(0x80 | (codep & 0x3f)); // 10xxxxxx
-  } else if (codep >= 0x0800 && codep <= 0xffff) { // U+0800 - U+FFFF
-    bytes.push(0xe0 | ((codep >> 12)));       // 1110xxxx
-    bytes.push(0x80 | ((codep >> 6) & 0x3f)); // 10xxxxxx
-    bytes.push(0x80 | (codep & 0x3f));        // 10xxxxxx
-  } else if (codep >= 0x10000 && codep <= 0x10ffff) { // U+10000 - U+10FFFF
-    bytes.push(0xf0 | ((codep >> 18)) & 0x07); // 11110xxx
-    bytes.push(0x80 | ((codep >> 12) & 0x3f)); // 10xxxxxx
-    bytes.push(0x80 | ((codep >> 6) & 0x3f));  // 10xxxxxx
-    bytes.push(0x80 | ((codep) & 0x3f));       // 10xxxxxx
+export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
+  const len = str.length;
+
+  if (emem(encbuf, offset, len * 4 + 5) == false)
+    return { error: erroffset, encbuf, bytes: offset };
+
+  const tmpoffset = offset;
+
+  const buf = MPBuffer.alloc(len * 4 + 5);
+
+  function utf8eproc(codep: number): void {
+    if (codep >= 0x0000 && codep <= 0x007f) { // U+0000 - U+007F
+      setu8(buf, codep, offset++); // 0xxxxxxx
+    } else if (codep >= 0x0080 && codep <= 0x07ff) { // U+0080 - U+07FF
+      setu8(buf, 0xc0 | (codep >> 6), offset++);   // 110xxxxx
+      setu8(buf, 0x80 | (codep & 0x3f), offset++); // 10xxxxxx
+    } else if (codep >= 0x0800 && codep <= 0xffff) { // U+0800 - U+FFFF
+      setu8(buf, 0xe0 | (codep >> 12) & 0x0f, offset++);  // 1110xxxx
+      setu8(buf, 0x80 | ((codep >> 6) & 0x3f), offset++); // 10xxxxxx
+      setu8(buf, 0x80 | (codep & 0x3f), offset++);        // 10xxxxxx
+    } else if (codep >= 0x10000 && codep <= 0x10ffff) { // U+10000 - U+10FFFF
+      setu8(buf, 0xf0 | ((codep >> 18) & 0x07), offset++); // 11110xxx
+      setu8(buf, 0x80 | ((codep >> 12) & 0x3f), offset++); // 10xxxxxx
+      setu8(buf, 0x80 | ((codep >> 6) & 0x3f), offset++);  // 10xxxxxx
+      setu8(buf, 0x80 | (codep & 0x3f), offset++);         // 10xxxxxx
+    }
   }
-}
 
-export function encodeStr(str: string, bytes: byte[]): EncodeOp {
-  const tmplen = bytes.length;
-
-  for(let k = 0; k < str.length; k += 2) {
-    const char = str[k], nchar = str[k+1];
-    const hcodep = char.charCodeAt(0);
-    const lcodep = nchar ? nchar.charCodeAt(0) : 0; // is this safe?
-
-    if (hcodep >= 0xd800 && hcodep <= 0xdbff) {
-      if (!(lcodep >= 0xdc00 && lcodep <= 0xdfff))
-        return { error: new Error('MSGPACK_STR_INVALID_SURROGATE_PAIRS'), bytes };
-
-      const codep = hcodep >= 0xd800 && hcodep <= 0xdbff
-        ? (((hcodep - 0xd800) * 0x0400) + (lcodep - 0xdc00) + 0x10000)
-        : hcodep;
-
-      utf8e(codep, bytes);
-      continue;
+  let tmpcodep = 0;
+  function cpeproc(char: string | undefined): void {
+    if (!char) return;
+    const codep = char.charCodeAt(0);
+    if (tmpcodep) {
+      if (codep >= 0xdc00 && codep <= 0xdfff) {
+        const kcodep = (tmpcodep - 0xd800) * 0x0400 + (codep - 0xdc00) + 0x10000;
+        utf8eproc(kcodep);
+        tmpcodep = 0;
+        return;
+      }
+      utf8eproc(0xfffd);
+    } else if (codep >= 0xd800 && codep <= 0xdbff) {
+      tmpcodep = codep;
+      return;
     }
 
-    utf8e(hcodep, bytes);
-    if (nchar) utf8e(lcodep, bytes);
+    utf8eproc(codep);
   }
 
-  const len = bytes.length - tmplen;
+  let rem = (len % 4);
+  let iters = (len - rem) / 4;
+  let k = 0;
 
-  if (len <= 0x1f) {
-    bytes.splice(tmplen, 0, 0xa0 | len);
-  } else if (len <= 0xff) {
-    bytes.splice(tmplen, 0, MSGPACK_FMT_STR8);
-    bytes.splice(tmplen, 0, len);
-  } else if (len <= 0xffff) {
-    bytes.splice(tmplen, 0, MSGPACK_FMT_STR16);
-  } else if (len <= 0xffffffff) {
-    bytes.splice(tmplen, 0, MSGPACK_FMT_STR32);
-    bytes.splice(tmplen, 0, (len >> 24) & 0xff);
-    bytes.splice(tmplen, 0, (len >> 16) & 0xff);
-    bytes.splice(tmplen, 0, (len >> 8) & 0xff);
-    bytes.splice(tmplen, 0, len & 0xff);
+  for(; rem > 0; rem--) {
+    cpeproc(str[k++]);
   }
 
-  return { error: null, bytes };
+  for(; iters > 0; iters--) {
+    cpeproc(str[k++]);
+    cpeproc(str[k++]);
+    cpeproc(str[k++]);
+    cpeproc(str[k++]);
+  }
+
+  const enclen = offset - tmpoffset;
+
+  let hoffset = tmpoffset;
+  if (enclen <= 0x1f) {
+    setu8(encbuf, 0xa0 | enclen, hoffset++);
+  } else if (enclen <= 0xff) {
+    setu8(encbuf, MSGPACK_FMT_STR8, hoffset++);
+    setu8(encbuf, enclen, hoffset++);
+  } else if (enclen <= 0xffff) {
+    setu8(encbuf, MSGPACK_FMT_STR16, hoffset++);
+    setu8(encbuf, (enclen >> 8) & 0xff, hoffset++);
+    setu8(encbuf, enclen & 0xff, hoffset++);
+  } else if (enclen <= 0xffffffff) {
+    setu8(encbuf, MSGPACK_FMT_STR32, hoffset);
+    setu8(encbuf, (enclen >> 24) & 0xff, hoffset++);
+    setu8(encbuf, (enclen >> 16) & 0xff, hoffset++);
+    setu8(encbuf, (enclen >> 8) & 0xff, hoffset++);
+    setu8(encbuf, enclen & 0xff, hoffset++);
+  }
+
+  const sbuf = buf.subarray(0, offset - tmpoffset);
+  encbuf.set(sbuf, hoffset - tmpoffset);
+
+  return { error: null, encbuf, bytes: hoffset + offset };
 }
