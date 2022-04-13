@@ -10,7 +10,10 @@ import {
   MSGPACK_FMT_INT32,
   MSGPACK_FMT_STR8,
   MSGPACK_FMT_STR16,
-  MSGPACK_FMT_STR32
+  MSGPACK_FMT_STR32,
+  MSGPACK_FMT_BIN8,
+  MSGPACK_FMT_BIN16,
+  MSGPACK_FMT_BIN32
 } from "./fmt";
 import { MPBuffer } from "./buffer";
 
@@ -173,4 +176,32 @@ export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
   encbuf.set(sbuf, hoffset - tmpoffset);
 
   return { error: null, encbuf, bytes: hoffset + offset };
+}
+
+export function encodeBin(bin: Uint8Array, encbuf: MPBuffer, offset = 0): EncodeOp {
+  const len = bin.byteLength;
+  const tmp = offset;
+
+  if (emem(encbuf, offset, len + 5) == false)
+    return { error: erroffset, encbuf, bytes: 0 };
+
+  if (len <= 0xff) {
+    setu8(encbuf, MSGPACK_FMT_BIN8, offset++);
+    setu8(encbuf, len, offset++);
+  } else if (len <= 0xffff) {
+    setu8(encbuf, MSGPACK_FMT_BIN16, offset++)
+    setu8(encbuf, (len >> 8) & 0xff, offset++)
+    setu8(encbuf, len & 0xff, offset++)
+  } else if (len <= 0xffffffff) {
+    setu8(encbuf, MSGPACK_FMT_BIN16, offset++)
+    setu8(encbuf, (len >> 24) & 0xff, offset++)
+    setu8(encbuf, (len >> 16) & 0xff, offset++)
+    setu8(encbuf, (len >> 8) & 0xff, offset++)
+    setu8(encbuf, len & 0xff, offset++)
+  }
+
+  encbuf.set(bin, offset);
+  offset += len;
+
+  return { error: null, encbuf, bytes: offset - tmp };
 }
