@@ -31,7 +31,7 @@ export interface EncodeOp {
   bytes: number;
 }
 
-const erroffset = new Error("Offset is out of bounds");
+const erroffset = new Error("MSGPACK_ERR_OFFSET_OUT_OF_BOUNDS");
 
 function setu8(buf: MPBuffer, u8: number, offset: number): void {
   buf[offset] = u8;

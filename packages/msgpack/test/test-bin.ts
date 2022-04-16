@@ -41,7 +41,7 @@ describe("encodeBin", function () {
     const encoded = encodeBin(buf, encbuf, 1);
 
     assert.instanceOf(encoded.error, Error);
-    assert.equal(encoded.error!.message, "Offset is out of bounds");
+    assert.equal(encoded.error!.message, "MSGPACK_ERR_OFFSET_OUT_OF_BOUNDS");
     assert.deepEqual(encoded.encbuf, encbuf);
     assert.equal(encoded.bytes, 0);
   });
