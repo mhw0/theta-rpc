@@ -13,7 +13,15 @@ import {
   MSGPACK_FMT_STR32,
   MSGPACK_FMT_BIN8,
   MSGPACK_FMT_BIN16,
-  MSGPACK_FMT_BIN32
+  MSGPACK_FMT_BIN32,
+  MSGPACK_FMT_FIXEXT1,
+  MSGPACK_FMT_FIXEXT2,
+  MSGPACK_FMT_FIXEXT4,
+  MSGPACK_FMT_FIXEXT8,
+  MSGPACK_FMT_FIXEXT16,
+  MSGPACK_FMT_EXT8,
+  MSGPACK_FMT_EXT16,
+  MSGPACK_FMT_EXT32
 } from "./fmt";
 import { MPBuffer } from "./buffer";
 
@@ -201,6 +209,55 @@ export function encodeBin(bin: Uint8Array, encbuf: MPBuffer, offset = 0): Encode
   }
 
   encbuf.set(bin, offset);
+  offset += len;
+
+  return { error: null, encbuf, bytes: offset - tmp };
+}
+
+export function encodeExt(type: number, bin: MPBuffer, encbuf: MPBuffer, offset = 0): EncodeOp {
+  const tmp = offset;
+  const len = bin.byteLength;
+
+  if (emem(encbuf, offset, len + 6) == false)
+    return { error: erroffset, encbuf, bytes: 0 };
+
+  if (type < 0 || type > 0x7f)
+    return { error: new Error("MSGPACK_ERR_INVALID_EXT_TYPE"), encbuf, bytes: 0 };
+
+  if (len == 0x01) {
+    setu8(encbuf, MSGPACK_FMT_FIXEXT1, offset++);
+    setu8(encbuf, type, offset++);
+  } else if (len == 0x02) {
+    setu8(encbuf, MSGPACK_FMT_FIXEXT2, offset++);
+    setu8(encbuf, type, offset++);
+  } else if (len == 0x04) {
+    setu8(encbuf, MSGPACK_FMT_FIXEXT4, offset++);
+    setu8(encbuf, type, offset++);
+  } else if (len == 0x08) {
+    setu8(encbuf, MSGPACK_FMT_FIXEXT8, offset++);
+    setu8(encbuf, type, offset++);
+  } else if (len == 0x10) {
+    setu8(encbuf, MSGPACK_FMT_FIXEXT16, offset++);
+    setu8(encbuf, type, offset++);
+  } else if (len <= 0xff) {
+    setu8(encbuf, MSGPACK_FMT_EXT8, offset++);
+    setu8(encbuf, len, offset++);
+    setu8(encbuf, type, offset++);
+  } else if (len <= 0xffff) {
+    setu8(encbuf, MSGPACK_FMT_EXT16, offset++);
+    setu8(encbuf, len >> 8, offset++);
+    setu8(encbuf, len & 0xff, offset++);
+    setu8(encbuf, type, offset++);
+  } else if (len <= 0xffffffff) {
+    setu8(encbuf, MSGPACK_FMT_EXT32, offset++);
+    setu8(encbuf, (len >> 24) & 0xff, offset++);
+    setu8(encbuf, (len >> 16) & 0xff, offset++);
+    setu8(encbuf, (len >> 8) & 0xff, offset++);
+    setu8(encbuf, len & 0xff, offset++);
+    setu8(encbuf, type, offset++);
+  }
+
+  encbuf.set(bin, offset - tmp);
   offset += len;
 
   return { error: null, encbuf, bytes: offset - tmp };

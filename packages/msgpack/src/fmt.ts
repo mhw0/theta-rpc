@@ -17,3 +17,12 @@ export const MSGPACK_FMT_STR32 = 0xdb;
 export const MSGPACK_FMT_BIN8 = 0xc4;
 export const MSGPACK_FMT_BIN16 = 0xc5;
 export const MSGPACK_FMT_BIN32 = 0xc6;
+
+export const MSGPACK_FMT_FIXEXT1 = 0xd4;
+export const MSGPACK_FMT_FIXEXT2 = 0xd5;
+export const MSGPACK_FMT_FIXEXT4 = 0xd6;
+export const MSGPACK_FMT_FIXEXT8 = 0xd7;
+export const MSGPACK_FMT_FIXEXT16 = 0xd8;
+export const MSGPACK_FMT_EXT8 = 0xc7;
+export const MSGPACK_FMT_EXT16 = 0xc8;
+export const MSGPACK_FMT_EXT32 = 0xc9;
