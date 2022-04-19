@@ -42,23 +42,26 @@ function emem(buf: MPBuffer, offset: number, size: number): boolean {
 }
 
 export function encodeNil(encbuf: MPBuffer, offset = 0): EncodeOp {
+  const tmp = offset;
   if (emem(encbuf, offset, 1) == false)
     return { error: erroffset, encbuf, bytes: offset };
 
   setu8(encbuf, MSGPACK_FMT_NIL, offset++);
 
-  return { error: null, encbuf, bytes: offset };
+  return { error: null, encbuf, bytes: offset - tmp };
 }
 
 export function encodeBool(bool: boolean, encbuf: MPBuffer, offset = 0): EncodeOp {
+  const tmp = offset;
   if (emem(encbuf, offset, 1) == false)
     return { error: erroffset, encbuf, bytes: offset };
 
   setu8(encbuf, bool ? MSGPACK_FMT_BOOL_TRUE : MSGPACK_FMT_BOOL_FALSE, offset++);
-  return { error: null, encbuf, bytes: offset };
+  return { error: null, encbuf, bytes: offset - tmp };
 }
 
 export function encodeInt(int: number, encbuf: MPBuffer, offset = 0): EncodeOp {
+  const tmp = offset;
   if (emem(encbuf, offset, 5) == false)
     return { error: erroffset, encbuf, bytes: offset };
 
@@ -94,16 +97,16 @@ export function encodeInt(int: number, encbuf: MPBuffer, offset = 0): EncodeOp {
     setu8(encbuf, int & 0xff, offset++);
   }
 
-  return { error: null, encbuf, bytes: offset };
+  return { error: null, encbuf, bytes: offset - tmp };
 }
 
 export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
+  const tmp = offset;
   const len = str.length;
 
   if (emem(encbuf, offset, len * 4 + 5) == false)
     return { error: erroffset, encbuf, bytes: offset };
 
-  const tmpoffset = offset;
 
   const buf = MPBuffer.alloc(len * 4 + 5);
 
@@ -160,9 +163,9 @@ export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
     cpeproc(str[k++]);
   }
 
-  const enclen = offset - tmpoffset;
+  const enclen = offset - tmp;
 
-  let hoffset = tmpoffset;
+  let hoffset = tmp;
   if (enclen <= 0x1f) {
     setu8(encbuf, 0xa0 | enclen, hoffset++);
   } else if (enclen <= 0xff) {
@@ -180,8 +183,8 @@ export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
     setu8(encbuf, enclen & 0xff, hoffset++);
   }
 
-  const sbuf = buf.subarray(0, offset - tmpoffset);
-  encbuf.set(sbuf, hoffset - tmpoffset);
+  const sbuf = buf.subarray(0, offset - tmp);
+  encbuf.set(sbuf, hoffset - tmp);
 
   return { error: null, encbuf, bytes: hoffset + offset };
 }
