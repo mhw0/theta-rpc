@@ -31,20 +31,19 @@ export interface EncodeOp {
   bytes: number;
 }
 
-const erroffset = new Error("MSGPACK_ERR_OFFSET_OUT_OF_BOUNDS");
-
 function setu8(buf: MPBuffer, u8: number, offset: number): void {
   buf[offset] = u8;
 }
 
-function emem(buf: MPBuffer, offset: number, size: number): boolean {
-  return (buf.byteLength - offset) >= size;
+function expand(buf: MPBuffer, offset: number, need: number): MPBuffer {
+	if (buf.length - offset >= need) return buf;
+
+	return MPBuffer.expand(buf, need - (buf.length - offset));
 }
 
 export function encodeNil(encbuf: MPBuffer, offset = 0): EncodeOp {
   const tmp = offset;
-  if (emem(encbuf, offset, 1) == false)
-    return { error: erroffset, encbuf, bytes: offset };
+  encbuf = expand(encbuf, offset, 1);
 
   setu8(encbuf, MSGPACK_FMT_NIL, offset++);
 
@@ -53,8 +52,8 @@ export function encodeNil(encbuf: MPBuffer, offset = 0): EncodeOp {
 
 export function encodeBool(bool: boolean, encbuf: MPBuffer, offset = 0): EncodeOp {
   const tmp = offset;
-  if (emem(encbuf, offset, 1) == false)
-    return { error: erroffset, encbuf, bytes: offset };
+
+  encbuf = expand(encbuf, offset, 1);
 
   setu8(encbuf, bool ? MSGPACK_FMT_BOOL_TRUE : MSGPACK_FMT_BOOL_FALSE, offset++);
   return { error: null, encbuf, bytes: offset - tmp };
@@ -62,8 +61,8 @@ export function encodeBool(bool: boolean, encbuf: MPBuffer, offset = 0): EncodeO
 
 export function encodeInt(int: number, encbuf: MPBuffer, offset = 0): EncodeOp {
   const tmp = offset;
-  if (emem(encbuf, offset, 5) == false)
-    return { error: erroffset, encbuf, bytes: offset };
+
+  encbuf = expand(encbuf, offset, 5);
 
   if (int >= 0x00 && int <= 0x7f) { // fixuint
     setu8(encbuf, int, offset++);
@@ -104,9 +103,7 @@ export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
   const tmp = offset;
   const len = str.length;
 
-  if (emem(encbuf, offset, len * 4 + 5) == false)
-    return { error: erroffset, encbuf, bytes: offset };
-
+  encbuf = expand(encbuf, offset, len * 4 + 5);
 
   const buf = MPBuffer.alloc(len * 4 + 5);
 
@@ -193,8 +190,7 @@ export function encodeBin(bin: Uint8Array, encbuf: MPBuffer, offset = 0): Encode
   const len = bin.byteLength;
   const tmp = offset;
 
-  if (emem(encbuf, offset, len + 5) == false)
-    return { error: erroffset, encbuf, bytes: 0 };
+  encbuf = expand(encbuf, offset, len + 5);
 
   if (len <= 0xff) {
     setu8(encbuf, MSGPACK_FMT_BIN8, offset++);
@@ -221,8 +217,7 @@ export function encodeExt(type: number, bin: MPBuffer, encbuf: MPBuffer, offset 
   const tmp = offset;
   const len = bin.byteLength;
 
-  if (emem(encbuf, offset, len + 6) == false)
-    return { error: erroffset, encbuf, bytes: 0 };
+  encbuf = expand(encbuf, offset, len + 6);
 
   if (type < 0 || type > 0x7f)
     return { error: new Error("MSGPACK_ERR_INVALID_EXT_TYPE"), encbuf, bytes: 0 };
