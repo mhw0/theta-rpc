@@ -21,7 +21,10 @@ import {
   MSGPACK_FMT_FIXEXT16,
   MSGPACK_FMT_EXT8,
   MSGPACK_FMT_EXT16,
-  MSGPACK_FMT_EXT32
+  MSGPACK_FMT_EXT32,
+  MSGPACK_FMT_FIXARRAY_MASK,
+  MSGPACK_FMT_ARRAY16,
+  MSGPACK_FMT_ARRAY32
 } from "./fmt";
 import { MPBuffer } from "./buffer";
 
@@ -35,14 +38,18 @@ function setu8(buf: MPBuffer, u8: number, offset: number): void {
   buf[offset] = u8;
 }
 
-function expand(buf: MPBuffer, offset: number, need: number): MPBuffer {
-	if (buf.length - offset >= need) return buf;
+function emem(buf: MPBuffer, offset: number, size: number): boolean {
+  return (buf.byteLength - offset) >= size;
+}
 
-	return MPBuffer.expand(buf, need - (buf.length - offset));
+function expand(buf: MPBuffer, offset: number, need: number): MPBuffer {
+  if (buf.length - offset >= need) return buf;
+  return MPBuffer.expand(buf, need - (buf.length - offset));
 }
 
 export function encodeNil(encbuf: MPBuffer, offset = 0): EncodeOp {
   const tmp = offset;
+
   encbuf = expand(encbuf, offset, 1);
 
   setu8(encbuf, MSGPACK_FMT_NIL, offset++);
@@ -104,7 +111,6 @@ export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
   const len = str.length;
 
   encbuf = expand(encbuf, offset, len * 4 + 5);
-
   const buf = MPBuffer.alloc(len * 4 + 5);
 
   function utf8eproc(codep: number): void {
@@ -259,4 +265,63 @@ export function encodeExt(type: number, bin: MPBuffer, encbuf: MPBuffer, offset 
   offset += len;
 
   return { error: null, encbuf, bytes: offset - tmp };
+}
+
+export function encodeArray(arr: unknown[], encbuf: MPBuffer, offset: number, depth: number): EncodeOp {
+
+  if (!(arr instanceof Array)) {
+    const error = new Error('MSGPACK_ERR_INVALID_ARRAY');
+    return { error, encbuf, bytes: 0 }
+  }
+
+  const len = arr.length;
+  const tmp = offset;
+
+  encbuf = expand(encbuf, offset, len + 5);
+
+  if (len <= 15) {
+    setu8(encbuf, len + 0x90, offset++);
+  } else if (len <= 0xffff) {
+    setu8(encbuf, MSGPACK_FMT_ARRAY16, offset++);
+    setu8(encbuf, (len >> 8) & 0xff, offset++);
+    setu8(encbuf, len & 0xff, offset++);
+  } else if (len <= 0xffffffff) {
+    setu8(encbuf, MSGPACK_FMT_ARRAY32, offset++);
+    setu8(encbuf, (len >> 24) & 0xff, offset++);
+    setu8(encbuf, (len >> 16) & 0xff, offset++);
+    setu8(encbuf, (len >> 8) & 0xff, offset++);
+    setu8(encbuf, len  & 0xff, offset++);
+  }
+
+  for(let i = 0; i < len; i++) {
+    const encoded = encodeUnknown(arr[i], encbuf, offset, depth - 1);
+    if (encoded.error)
+      return { error: encoded.error, encbuf, bytes: tmp - offset };
+
+    offset += encoded.bytes;
+    encbuf = encoded.encbuf;
+  }
+
+  return { error: null, encbuf, bytes: offset - tmp };
+}
+
+export function encodeUnknown(data: unknown, encbuf: MPBuffer, offset: number, depth: number): EncodeOp {
+  if (depth === 0)
+    return { error: new Error('MSGPACK_ERR_MAX_DEPTH_REACHED'), encbuf, bytes: 0 };
+
+  if (data === null) {
+    return encodeNil(encbuf, offset);
+  } else if (typeof data === 'boolean') {
+    return encodeBool(data, encbuf, offset);
+  } else if (typeof data === 'number') {
+    return encodeInt(data, encbuf, offset);
+  } else if (typeof data === 'string') {
+    return encodeStr(data, encbuf, offset);
+  } else if (data instanceof Uint8Array) {
+    return encodeBin(data, encbuf, offset);
+  } else if (data instanceof Array) {
+    return encodeArray(data, encbuf, offset, depth);
+  }
+
+  return { error: null, encbuf, bytes: 0 };
 }
