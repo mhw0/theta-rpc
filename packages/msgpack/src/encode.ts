@@ -29,6 +29,17 @@ import {
 } from "./fmt";
 import { MPBuffer } from "./buffer";
 
+const exts: Extension[] = [];
+interface Extension {
+  type: number,
+  encode: (data: unknown) => Uint8Array | null
+}
+
+interface EncodeFunc {
+  (data: unknown, encbuf: MPBuffer, offset: number, depth: number) : EncodeOp,
+  ext: (ext: Extension) => void
+}
+
 export interface EncodeOp {
   error: Error | null;
   encbuf: MPBuffer;
@@ -37,10 +48,6 @@ export interface EncodeOp {
 
 function setu8(buf: MPBuffer, u8: number, offset: number): void {
   buf[offset] = u8;
-}
-
-function emem(buf: MPBuffer, offset: number, size: number): boolean {
-  return (buf.byteLength - offset) >= size;
 }
 
 function expand(buf: MPBuffer, offset: number, need: number): MPBuffer {
@@ -319,15 +326,20 @@ export function encodeUnknown(data: unknown, encbuf: MPBuffer, offset: number, d
     return encodeInt(data, encbuf, offset);
   } else if (typeof data === 'string') {
     return encodeStr(data, encbuf, offset);
-  } else if (data instanceof Uint8Array) {
-    return encodeBin(data, encbuf, offset);
   } else if (data instanceof Array) {
     return encodeArray(data, encbuf, offset, depth);
+  } else if (data instanceof Uint8Array) {
+    return encodeBin(data, encbuf, offset);
   } else {
+    for(const ext of exts) {
+      let bin: Uint8Array | null;
+      if ((bin = ext.encode(data)) instanceof Uint8Array) {
+        return encodeExt(ext.type, bin, encbuf, offset);
+      }
+    }
+
     return encodeMap(data, encbuf, offset, depth);
   }
-
-  return { error: null, encbuf, bytes: 0 };
 }
 
 export function encodeMap(map: any, encbuf: MPBuffer, offset: number, depth: number): EncodeOp {
@@ -366,4 +378,13 @@ export function encodeMap(map: any, encbuf: MPBuffer, offset: number, depth: num
   }
 
   return { error: null, encbuf, bytes: offset - tmp };
+}
+
+
+export const encode = <EncodeFunc>function(data: unknown, encbuf: MPBuffer, offset: number, depth: number): EncodeOp {
+  return encodeUnknown(data, encbuf, offset, depth);
+}
+
+encode.ext = function(ext) {
+  exts.push(ext);
 }
