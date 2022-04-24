@@ -27,6 +27,8 @@ export const MSGPACK_FMT_EXT8 = 0xc7;
 export const MSGPACK_FMT_EXT16 = 0xc8;
 export const MSGPACK_FMT_EXT32 = 0xc9;
 
-export const MSGPACK_FMT_FIXARRAY_MASK = 0x90;
 export const MSGPACK_FMT_ARRAY16 = 0xdc;
 export const MSGPACK_FMT_ARRAY32 = 0xdd;
+
+export const MSGPACK_FMT_MAP16 = 0xde;
+export const MSGPACK_FMT_MAP32 = 0xdf;

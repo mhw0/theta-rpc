@@ -22,9 +22,10 @@ import {
   MSGPACK_FMT_EXT8,
   MSGPACK_FMT_EXT16,
   MSGPACK_FMT_EXT32,
-  MSGPACK_FMT_FIXARRAY_MASK,
   MSGPACK_FMT_ARRAY16,
-  MSGPACK_FMT_ARRAY32
+  MSGPACK_FMT_ARRAY32,
+  MSGPACK_FMT_MAP16,
+  MSGPACK_FMT_MAP32
 } from "./fmt";
 import { MPBuffer } from "./buffer";
 
@@ -107,12 +108,13 @@ export function encodeInt(int: number, encbuf: MPBuffer, offset = 0): EncodeOp {
 }
 
 export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
-  const tmp = offset;
   const len = str.length;
+  const tmp = offset;
 
   encbuf = expand(encbuf, offset, len * 4 + 5);
-  const buf = MPBuffer.alloc(len * 4 + 5);
+  const buf = MPBuffer.alloc(len * 4);
 
+  offset = 0;
   function utf8eproc(codep: number): void {
     if (codep >= 0x0000 && codep <= 0x007f) { // U+0000 - U+007F
       setu8(buf, codep, offset++); // 0xxxxxxx
@@ -166,30 +168,30 @@ export function encodeStr(str: string, encbuf: MPBuffer, offset = 0): EncodeOp {
     cpeproc(str[k++]);
   }
 
-  const enclen = offset - tmp;
+  const enclen = offset;
+  offset = tmp;
 
-  let hoffset = tmp;
   if (enclen <= 0x1f) {
-    setu8(encbuf, 0xa0 | enclen, hoffset++);
+    setu8(encbuf, 0xa0 | enclen, offset++);
   } else if (enclen <= 0xff) {
-    setu8(encbuf, MSGPACK_FMT_STR8, hoffset++);
-    setu8(encbuf, enclen, hoffset++);
+    setu8(encbuf, MSGPACK_FMT_STR8, offset++);
+    setu8(encbuf, enclen, offset++);
   } else if (enclen <= 0xffff) {
-    setu8(encbuf, MSGPACK_FMT_STR16, hoffset++);
-    setu8(encbuf, (enclen >> 8) & 0xff, hoffset++);
-    setu8(encbuf, enclen & 0xff, hoffset++);
+    setu8(encbuf, MSGPACK_FMT_STR16, offset++);
+    setu8(encbuf, (enclen >> 8) & 0xff, offset++);
+    setu8(encbuf, enclen & 0xff, offset++);
   } else if (enclen <= 0xffffffff) {
-    setu8(encbuf, MSGPACK_FMT_STR32, hoffset);
-    setu8(encbuf, (enclen >> 24) & 0xff, hoffset++);
-    setu8(encbuf, (enclen >> 16) & 0xff, hoffset++);
-    setu8(encbuf, (enclen >> 8) & 0xff, hoffset++);
-    setu8(encbuf, enclen & 0xff, hoffset++);
+    setu8(encbuf, MSGPACK_FMT_STR32, offset++);
+    setu8(encbuf, (enclen >> 24) & 0xff, offset++);
+    setu8(encbuf, (enclen >> 16) & 0xff, offset++);
+    setu8(encbuf, (enclen >> 8) & 0xff, offset++);
+    setu8(encbuf, enclen & 0xff, offset++);
   }
 
-  const sbuf = buf.subarray(0, offset - tmp);
-  encbuf.set(sbuf, hoffset - tmp);
+  const sbuf = buf.subarray(0, enclen);
+  encbuf.set(sbuf, offset);
 
-  return { error: null, encbuf, bytes: hoffset + offset };
+  return { error: null, encbuf, bytes: (offset - tmp) + enclen };
 }
 
 export function encodeBin(bin: Uint8Array, encbuf: MPBuffer, offset = 0): EncodeOp {
@@ -206,7 +208,7 @@ export function encodeBin(bin: Uint8Array, encbuf: MPBuffer, offset = 0): Encode
     setu8(encbuf, (len >> 8) & 0xff, offset++)
     setu8(encbuf, len & 0xff, offset++)
   } else if (len <= 0xffffffff) {
-    setu8(encbuf, MSGPACK_FMT_BIN16, offset++)
+    setu8(encbuf, MSGPACK_FMT_BIN32, offset++)
     setu8(encbuf, (len >> 24) & 0xff, offset++)
     setu8(encbuf, (len >> 16) & 0xff, offset++)
     setu8(encbuf, (len >> 8) & 0xff, offset++)
@@ -321,7 +323,47 @@ export function encodeUnknown(data: unknown, encbuf: MPBuffer, offset: number, d
     return encodeBin(data, encbuf, offset);
   } else if (data instanceof Array) {
     return encodeArray(data, encbuf, offset, depth);
+  } else {
+    return encodeMap(data, encbuf, offset, depth);
   }
 
   return { error: null, encbuf, bytes: 0 };
+}
+
+export function encodeMap(map: any, encbuf: MPBuffer, offset: number, depth: number): EncodeOp {
+  const keys = Object.keys(map);
+  const len = keys.length;
+  const tmp = offset;
+
+  if (len <= 15) {
+    setu8(encbuf, 0x80 + len, offset++);
+  } else if (len <= 0xffff) {
+    setu8(encbuf, MSGPACK_FMT_MAP16, offset++);
+    setu8(encbuf, (len >> 8) & 0xff, offset++);
+    setu8(encbuf, len & 0xff, offset++);
+  } else if (len <= 0xffffffff) {
+    setu8(encbuf, MSGPACK_FMT_MAP32, offset++)
+    setu8(encbuf, (len >> 24) & 0xff, offset++);
+    setu8(encbuf, (len >> 16) & 0xff, offset++);
+    setu8(encbuf, (len >> 8) & 0xff, offset++);
+    setu8(encbuf, len & 0xff, offset++);
+  }
+
+  for(let i = 0; i < keys.length; i++) {
+    const encodedKey = encodeStr(keys[i], encbuf, offset);
+    if (encodedKey.error)
+      return { error: encodedKey.error, encbuf, bytes: tmp - offset };
+
+    offset += encodedKey.bytes;
+    encbuf = encodedKey.encbuf;
+
+    const encoded = encodeUnknown(map[keys[i]], encbuf, offset, depth - 1);
+    if (encoded.error)
+      return { error: encoded.error, encbuf, bytes: tmp - offset };
+
+    offset += encoded.bytes;
+    encbuf = encoded.encbuf;
+  }
+
+  return { error: null, encbuf, bytes: offset - tmp };
 }
